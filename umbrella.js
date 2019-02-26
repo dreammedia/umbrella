@@ -1,8 +1,86 @@
-// Umbrella JS  http://umbrellajs.com/
-// -----------
-// Small, lightweight jQuery alternative
-// @author Francisco Presencia Fandos https://francisco.io/
-// @inspiration http://youmightnotneedjquery.com/
+(function () {
+
+if (typeof window.Element === "undefined" || "classList" in document.documentElement) return;
+
+var prototype = Array.prototype,
+    push = prototype.push,
+    splice = prototype.splice,
+    join = prototype.join;
+
+function DOMTokenList(el) {
+  this.el = el;
+  // The className needs to be trimmed and split on whitespace
+  // to retrieve a list of classes.
+  var classes = el.className.replace(/^\s+|\s+$/g,'').split(/\s+/);
+  for (var i = 0; i < classes.length; i++) {
+    push.call(this, classes[i]);
+  }
+};
+
+DOMTokenList.prototype = {
+  add: function(token) {
+    if(this.contains(token)) return;
+    push.call(this, token);
+    this.el.className = this.toString();
+  },
+  contains: function(token) {
+    return this.el.className.indexOf(token) != -1;
+  },
+  item: function(index) {
+    return this[index] || null;
+  },
+  remove: function(token) {
+    if (!this.contains(token)) return;
+    for (var i = 0; i < this.length; i++) {
+      if (this[i] == token) break;
+    }
+    splice.call(this, i, 1);
+    this.el.className = this.toString();
+  },
+  toString: function() {
+    return join.call(this, ' ');
+  },
+  toggle: function(token) {
+    if (!this.contains(token)) {
+      this.add(token);
+    } else {
+      this.remove(token);
+    }
+
+    return this.contains(token);
+  }
+};
+
+window.DOMTokenList = DOMTokenList;
+
+function defineElementGetter (obj, prop, getter) {
+    if (Object.defineProperty) {
+        Object.defineProperty(obj, prop,{
+            get : getter
+        });
+    } else {
+        obj.__defineGetter__(prop, getter);
+    }
+}
+
+defineElementGetter(Element.prototype, 'classList', function () {
+  return new DOMTokenList(this);
+});
+
+})();
+
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/09/28
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/12/05
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+// extending the umbrella class
+// extended parts are marked as "EXTENDED:"
+// add 'polyfill.js' to the begining of the files in Gruntfile.js (for IE9), exchange 'src/umbrella.js' with 'extended/umbrella.js', 'src/export.js' with 'extended/export.js' and add 'extended/plugins/**/*.js'
 
 // Initialize the library
 var u = function (parameter, context) {
@@ -23,6 +101,9 @@ var u = function (parameter, context) {
   if (typeof parameter === 'string') {
     parameter = this.select(parameter, context);
   }
+  // EXTENDED: If a function is given, call it when the DOM is ready
+  else if (typeof parameter === 'function') u.prototype.ready(parameter);
+  // END EXTENDED
 
   // If we're referring a specific node as in on('click', function(){ u(this) })
   // or the select() function returned a single node such as in '#id'
@@ -30,11 +111,17 @@ var u = function (parameter, context) {
     parameter = [parameter];
   }
 
+  // EXTENDED: Makes it possible to add events to the window object
+  if (u.isWindow(parameter)) {
+    parameter = [parameter];
+  }
+  // END EXTENDED
+
   // Convert to an array, since there are many 'array-like' stuff in js-land
   this.nodes = this.slice(parameter);
 };
 
-// Map u(...).length to u(...).nodes.length
+// Map u( something ).length to u( something ).nodes.length
 u.prototype = {
   get length () {
     return this.nodes.length;
@@ -44,6 +131,12 @@ u.prototype = {
 // This made the code faster, read "Initializing instance variables" in
 // https://developers.google.com/speed/articles/optimizing-javascript
 u.prototype.nodes = [];
+
+// EXTENDED:
+u.isWindow = function (obj) { return obj != null && obj === obj.window; };
+u.isDocument = function (obj) { return obj != null && obj.nodeType === obj.DOCUMENT_NODE; };
+u.camelize = function (str) { return str.replace(/-+(.)?/g, function(match, chr){ return chr ? chr.toUpperCase() : '' }); };
+u.dasherize = function (str) { return str.replace(/::/g, '/').replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2').replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/_/g, '-').toLowerCase(); };
 
 // Add class(es) to the matched nodes
 u.prototype.addClass = function () {
@@ -757,9 +850,499 @@ u.prototype.wrap = function (selector) {
   });
 };
 
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/10/27
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/10/27
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+// creating a new u object by adding another, returning the new object
+u.prototype.add = function (parameter, context) {
+  var u_node = u(parameter, context);
+  u_node.nodes = this.nodes.concat(u_node.nodes);
+  return u_node;
+};
+
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/10/26
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/10/28
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+/**
+ * Loads text via an ajax call.
+ * Calls the callback function with the returned text as first parameter (string) and the success as second (boolean).
+ * Adds always a "cache" value if the method is "post".
+ *
+ * Returns the success of the call, not of the respons.
+ *
+ *
+ * @param   url             the url of the request
+ * @param   callback        a callback function
+ * @param   method          the method "get" || "post" (optional, default "get")
+ * @param	values		    values in the form of an associative array which are getting sent with the call (optional)
+ * @param   mine            the mine type of the request (optional, default "text/plain")
+ * @param	header		    an associatives array of header parameters (optional)
+ * @param   credentials     indicates if the credentials of the site should be sent with the call (optional, default: false)
+ *
+ * @return	boolean
+ */
+u.ajax = function (url, callback, method, values, mine, header, credentials) {
+  if (typeof method === 'undefined') method = 'GET';
+  if (typeof values === 'undefined') values = [];
+  if (typeof mine === 'undefined') mine = 'text/plain';
+  if (typeof header === 'undefined') header = [];
+  if (typeof credentials === 'undefined') credentials = false;
+
+  var now = new Date();
+
+  method = method.toUpperCase();
+  if (!header['X-Requested-With']) header['X-Requested-With'] = 'XMLHttpRequest'; // use only if not cross domain
+  if (method === 'POST') {
+    header['cache-control'] = 'no-cache';
+    values['cache'] = now.getTime();
+  }
+
+  var request = null;
+  var asyncronous = true;
+
+  try {
+    request = new window.XMLHttpRequest();
+    request.overrideMimeType(mine);
+  } catch (e) {
+    try {
+      request = new window.ActiveXObject('Msxml2.XMLHTTP');
+    } catch (e) {
+      try {
+        request = new window.ActiveXObject('Microsoft.XMLHTTP');
+      } catch (failed) {
+        request = null;
+      }
+    }
+  }
+
+  if (request == null) {
+    if (callback) callback(null, false);
+    return false;
+  }
+
+  var data = '';
+  for (var value in values) {
+    if (typeof values[value] === 'string' || typeof values[value] === 'number') data += '&' + value + '=' + encodeURIComponent(values[value]);
+  }
+  data = data.substr(1);
+
+  var checkData = function () {
+    switch (request.readyState) {
+      case 4:
+        if (request.status !== 200) {
+          if (request.status === 0) return 0;
+          return false;
+        } else {
+          if (request.responseText === '') return false;
+          else return true;
+        }
+        break;
+      default:
+        break;
+    }
+    return null;
+  };
+
+  var onData = function () {
+    var success = checkData();
+    if (success === null) return;
+    if (callback) {
+      if (!success) callback(null, success);
+      else callback(this.responseText, true);
+    }
+    request = null;
+  };
+
+  if (method === 'GET' && data.length) {
+    if (url.indexOf('?') < 0) url += '?' + data;
+    else url += '&' + data;
+  }
+
+  request.open(method, url, asyncronous);
+  request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  if (header.length) {
+    for (var key in header) {
+      request.setRequestHeader(key, header[key]);
+    }
+  }
+  if (credentials) request.withCredentials = 'true';
+  request.onreadystatechange = onData;
+  if (method === 'GET' || !data.length) request.send();
+  else request.send(data);
+
+  return true;
+};
+
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/09/28
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/09/30
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+// replacement for jQueries css function
+u.prototype.css = function (property, value) {
+  if (arguments.length < 2) {
+    var element = this.first();
+    if (!element) return;
+    if (typeof property === 'string') return element.style[u.camelize(property)] || window.getComputedStyle(element, '').getPropertyValue(property);
+  } else {
+    var css = '';
+    if (typeof property === 'string') {
+      if (!value && value !== 0) this.each(function (node) { node.style.removeProperty(u.dasherize(property)); });
+      else css = u.dasherize(property) + ':' + value;
+    } else {
+      var key;
+      for (key in property)
+        if (!property[key] && property[key] !== 0) this.each(function (node) { node.style.removeProperty(u.dasherize(key)); });
+        else css += u.dasherize(key) + ':' + property[key] + ';';
+    }
+    return this.each(function (node) { node.style.cssText += ';' + css; });
+  }
+};
+
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/09/30
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/09/30
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+// replacement for jQueries each function (inspired/copied by/from zepto.js)
+// difference to umbrellas each function is that it can be stopped by having the callback function returning "false"
+// and "this" is the node not the u-object and first parameter is the index, second the node
+// is slower than the umbrella each function
+u.prototype.each$ = function (callback) {
+  var nodes = this.nodes;
+  for (var i = 0, l = this.nodes.length; i < l; i++) if (callback.call(nodes[i], i, nodes[i]) === false) return this;
+
+  return this;
+};
+
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/10/31
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/10/31
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+// returns the next u(node) in the DOM
+u.prototype.next = function (selector) {
+  return this.map(function (node) {
+    var next = node.nextSibling;
+    do if (next !== null && next.nodeValue !== null) next = next.nextSibling;
+    while (next !== null && next.nodeValue !== null);
+    return this.slice(next);
+  }).filter(selector);
+};
+
+// Removes the callback to the event listener for each node
+// overwriting existing function to supply the possibility to define the listener function
+u.prototype.off = function (events, callback) {
+  return this.eacharg(events, function (node, event) {
+    if (callback) node.removeEventListener(event, callback);
+    else {
+      u(node._e ? node._e[event] : []).each(function (cb) {
+        node.removeEventListener(event, cb);
+      });
+    }
+  });
+};
+
+// Attach a callback to the specified events
+// Use this version of "on" if you want to remove this specific event/listener combination later
+// without removing other listeners of the same event.
+// custom arguments aren't added to the callback functions but are available through the detail parameter of the event object
+u.prototype.on2 = function (events, cb) {
+  return this.eacharg(events, function (node, event) {
+    node.addEventListener(event, cb);
+
+    // Store it so we can dereference it with `.off()` later on
+    node._e = node._e || {};
+    node._e[event] = node._e[event] || [];
+    node._e[event].push(cb);
+  });
+};
+
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/10/31
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/10/31
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+// returns the previous u(node) in the DOM
+u.prototype.previous = function (selector) {
+  return this.map(function (node) {
+    var previous = node.previousSibling;
+    do if (previous !== null && previous.nodeValue !== null) previous = previous.previousSibling;
+    while (previous !== null && previous.nodeValue !== null);
+    return this.slice(previous);
+  }).filter(selector);
+};
+
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/09/30
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/12/05
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+// replacement for jQueries ready function (inspired/copied by/from zepto.js)
+// use u(handler) or u.ready(handler) or u().ready(handler) or u( something ).ready(handler)
+u.prototype.ready = function (callback) {
+  // don't use "interactive" on IE <= 10 (it can fired premature)
+  if (document.readyState === 'complete' || (document.readyState !== 'loading' && !document.documentElement.doScroll)) window.setTimeout(function () { callback(u); }, 0);
+  else {
+    var handler = function () {
+      document.removeEventListener('DOMContentLoaded', handler, false);
+      window.removeEventListener('load', handler, false);
+      callback(u);
+    };
+    document.addEventListener('DOMContentLoaded', handler, false);
+    window.addEventListener('load', handler, false);
+  }
+};
+
+u.ready = u.prototype.ready;
+
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/09/30
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/10/25
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+// just a bunch of shortcuts
+u.prototype.click = function (cb, cb2) {
+  return this.on('click', cb, cb2);
+};
+u.prototype.resize = function (cb, cb2) {
+  return this.on('resize', cb, cb2);
+};
+
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/10/24
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/10/25
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+// adds the event listener swipe to an object
+// the event swipe needs to be enabled first for the object
+// the callback function receives as second parameter eather "left", "right", "up", "down", "touch" or "none"
+// the callback function receives as third and fourth parameter the event objects of the touchstart and touchend event
+u.prototype.swipe = function (cb, cb2) {
+  return this.on('swipe', cb, cb2);
+};
+
+// enables the event swipe for an object
+// set optional parameter to true to prevent scrolling when swiping inside the object (or any other event triggering for that matter)
+u.prototype.swipeOn = function (prevent_scrolling) {
+  var me = this;
+  var touchsurface = this.first();
+
+  me.swipe_prevent_scrolling = prevent_scrolling;
+  me.swipe_touch_start = function (e) { me.swipeTouchStart(e); };
+  me.swipe_touch_move = function (e) { me.swipeTouchMove(e); };
+  me.swipe_touch_end = function (e) { me.swipeTouchEnd(e); };
+
+  // me.swipe_threshold = 150; // required min distance traveled to be considered swipe
+  // me.swipe_restraint = 100; // maximum distance allowed at the same time in perpendicular direction
+  // me.swipe_allowedTime = 300; // maximum time allowed to travel that distance
+
+  touchsurface.addEventListener('touchstart', me.swipe_touch_start, false);
+  touchsurface.addEventListener('touchmove', me.swipe_touch_move, false);
+  touchsurface.addEventListener('touchend', me.swipe_touch_end, false);
+
+  return me;
+};
+
+// disables the event swipe for an object
+u.prototype.swipeOff = function () {
+  var me = this;
+  var touchsurface = this.first();
+  touchsurface.removeEventListener('touchstart', me.swipe_touch_start, false);
+  touchsurface.removeEventListener('touchmove', me.swipe_touch_move, false);
+  touchsurface.removeEventListener('touchend', me.swipe_touch_end, false);
+
+  return me;
+};
+
+u.prototype.swipeTouchStart = function (e) {
+  var me = this;
+  var touchobj = e.changedTouches[0];
+  me.swipe_start_event = e;
+  me.swipe_startX = touchobj.pageX;
+  me.swipe_startY = touchobj.pageY;
+  me.swipe_startTime = new Date().getTime(); // record time when finger first makes contact with surface
+  if (me.swipe_prevent_scrolling) e.preventDefault();
+};
+
+u.prototype.swipeTouchMove = function (e) {
+  var me = this;
+  if (me.swipe_prevent_scrolling) e.preventDefault(); // prevent scrolling when inside DIV
+};
+
+u.prototype.swipeTouchEnd = function (e) {
+  var me = this;
+  var touchobj = e.changedTouches[0];
+  var swipedir = 'none';
+  var distX = touchobj.pageX - me.swipe_startX; // get horizontal dist traveled by finger while in contact with surface
+  var distY = touchobj.pageY - me.swipe_startY; // get vertical dist traveled by finger while in contact with surface
+  var elapsedTime = new Date().getTime() - me.swipe_startTime; // get time elapsed
+
+  if (elapsedTime <= 300) { // first condition for swipe met
+    if (Math.abs(distX) >= 150 && Math.abs(distY) <= 100) { // 2nd condition for horizontal swipe met
+      swipedir = (distX < 0) ? 'left' : 'right'; // if dist traveled is negative, it indicates left swipe
+    } else if (Math.abs(distY) >= 150 && Math.abs(distX) <= 100) { // 2nd condition for vertical swipe met
+      swipedir = (distY < 0) ? 'up' : 'down'; // if dist traveled is negative, it indicates up swipe
+    } else if (elapsedTime < 100) {
+      swipedir = 'touch';
+    }
+  }
+  me.trigger('swipe', swipedir, me.swipe_start_event, e);
+  if (me.swipe_prevent_scrolling) e.preventDefault();
+};
+
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/10/26
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/10/29
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+// an alternative setTimeout function based on window.requestAnimationFrame but with fallback to window.setTimeout
+u.setTimeout = function (callback, timeout) {
+  if (window.requestAnimationFrame) {
+    if (!u.timeouts) u.timeouts = ['s'];
+    var id = u.timeouts.length;
+    var start = new Date();
+
+    var internal = function () {
+      var now = new Date();
+      if (now.getTime() - start.getTime() < timeout) u.timeouts[id] = window.requestAnimationFrame(internal);
+      else callback();
+    };
+
+    u.timeouts[id] = window.requestAnimationFrame(internal);
+    return id;
+  } else return window.setTimeout(callback, timeout);
+};
+
+// the equivalent to window.clearTimeout for u.setTimeout
+u.clearTimeout = function (id) {
+  if (window.cancelAnimationFrame) {
+    id = (!u.timeouts || u.timeouts.length <= id) ? null : u.timeouts[id];
+    window.cancelAnimationFrame(id);
+  } else window.clearTimeout(id);
+};
+
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/10/24
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/10/25
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+// event for detecting the end of an transition
+// if the browser supports the feature, the event name will be in u.transition_event
+// otherwise u.transition_event will not exist after the call
+u.prototype.transition = function (cb, cb2) {
+  if (!u.transition_event) {
+    var el = document.createElement('fakeelement');
+
+    var transitions = {
+      'transition': 'transitionend',
+      'OTransition': 'oTransitionEnd',
+      'MozTransition': 'transitionend',
+      'WebkitTransition': 'webkitTransitionEnd'
+    };
+
+    for (var t in transitions) {
+      if (el.style[t] !== undefined) {
+        u.transition_event = transitions[t];
+      }
+    }
+  }
+
+  if (!u.transition_event) return this;
+
+  return this.on(u.transition_event, cb, cb2);
+};
+
+/**
+* @Author: Daniel Lehmann
+* @Date:   2018/09/28
+* @Email:  code@dreammedia.info
+* @Last modified by:   Daniel Lehmann
+* @Last modified time: 2018/10/04
+* @copyright Daniel Lehmann (code@dreammedia.info)
+*/
+
+// replacement for jQueries width and height functions (inspired/copied by/from zepto.js)
+// if no unit for value is given, "px" is added
+['width', 'height'].forEach(function (dimension) {
+  var dimensionProperty = dimension.replace(/./, function (m) { return m[0].toUpperCase(); });
+
+  u.prototype[dimension] = function (value) {
+    var offset;
+    var el = this.first();
+
+    if (typeof value === 'undefined') return u.isWindow(el) ? el['inner' + dimensionProperty] : u.isDocument(el) ? el.documentElement['scroll' + dimensionProperty] : (offset = this.size()) && offset[dimension];
+    else {
+      if (value.toString() === window.parseInt(value).toString()) value += 'px';
+      else {
+        var test_value = value.toString();
+        var point = test_value.indexOf('.');
+        if (point > 0) {
+          test_value = test_value.substr(0, point) + '.' + test_value.substr(point + 1, 2);
+          if (test_value === (window.parseFloat(Math.floor(value * 100)) / 100).toString()) value = test_value + 'px';
+        }
+      }
+
+      return this.each(function (node) {
+        el = u(node);
+        el.css(dimension, value);
+      });
+    }
+  };
+});
+
+// Only removed the three dots from the comments because of possible prblems when a firewall is missconfigurated
 // Export it for webpack
 if (typeof module === 'object' && module.exports) {
-  // Avoid breaking it for `import { u } from ...`. Add `import u from ...`
+  // Avoid breaking it for `import { u } from something`. Add `import u from something`
   module.exports = u;
   module.exports.u = u;
 }

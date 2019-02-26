@@ -81,7 +81,7 @@ module.exports = function (grunt) {
           }
         },
         files: {
-          'umbrella.js': ['src/umbrella.js', 'src/plugins/**/*.js', 'src/export.js'],
+          'umbrella.js': ['polyfill.js', 'extended/umbrella.js', 'src/plugins/**/*.js', 'extended/plugins/**/*.js', 'extended/export.js'],
           'documentation.md': ['src/readme.md', 'src/plugins/**/readme.md']
         }
       },
