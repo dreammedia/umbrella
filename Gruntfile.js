@@ -4,7 +4,7 @@ module.exports = function (grunt) {
   grunt.initConfig({
     uglify: {
       options: {
-        banner: '/* Umbrella JS ' + grunt.file.readJSON('package.json').version + ' umbrellajs.com */\n'
+    banner: '/* Umbrella JS ' + grunt.file.readJSON('package.json').version + 'original: umbrellajs.com */\n/* Extended version: https://github.com/dreammedia/umbrella */\n'
       },
       umbrella: {
         files: {

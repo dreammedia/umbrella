@@ -148,3 +148,164 @@ Created and maintained by [Francisco Presencia](https://github.com/franciscop) u
 - https://gomakethings.com/umbrella-js/
 - https://medium.com/@rintoug/umbrella-js-is-your-alternative-to-jquery-c73fab99061
 - https://lean.codecomputerlove.com/keeping-your-code-dry-with-umbrellajs/
+
+
+
+
+# Extended version
+
+Extended by [Daniel Lehmann](https://github.com/dreammedia)
+
+I added a couple more functions to umbrellajs. Most of them are jQuery functions I missed. Some are just functions I find usefull.
+Most of the code for the jQuery functions is original taken from [zeptojs.com][].
+
+You can now pass the window object to the umbrella object to add events to it:
+E.g.: u(window).resize(...)
+
+## Functions
+
+### add:
+
+creating a new u object by adding another, returning the new object
+
+
+### u.ajax:
+
+loads text via an ajax call
+
+/**
+ * Loads text via an ajax call.
+ * Calls the callback function with the returned text as first parameter (string) and the success as second (boolean).
+ * Adds always a "cache" value if the method is "post".
+ *
+ * Returns the success of the call, not of the respons.
+ *
+ *
+ * @param url             the url of the request
+ * @param callback        a callback function
+ * @param method          the method "get" || "post" (optional, default "get")
+ * @param values          values in the form of an associative array which are getting sent with the call (optional)
+ * @param mine            the mine type of the request (optional, default "text/plain")
+ * @param header          an associatives array of header parameters (optional)
+ * @param credentials     indicates if the credentials of the site should be sent with the call (optional, default: false)
+ *
+ * @return	boolean
+ */
+
+
+### u.clearTimeout
+
+the equivalent to window.clearTimeout for u.setTimeout
+
+
+### u.camelize
+
+returns the passed string camelized
+
+
+### css
+
+equivalent of jQueries css function
+
+
+### u.dasherize
+
+returns the passed string dasherized
+
+
+### each$
+
+equivalent of jQueries each function
+
+
+### height
+
+equivalent of jQueries height function
+
+
+### u.isDocument
+
+returns if the passed object is the document object
+
+
+### u.isWindow
+
+returns if the passed object is the window object
+
+
+### next
+
+returns the next u(node) in the DOM
+
+
+### previous
+
+returns the previous u(node) in the DOM
+
+
+### ready
+
+equivalent of jQueries ready function
+
+
+### swipeOn
+
+enables the event "swipe" for an object (needs to be done only ones per object)
+
+
+### swipeOff
+
+disables the event swipe for an object
+
+
+### off
+
+added second parameter "listener" to remove only specific event/listener combination
+
+
+### on2
+
+alternative "on" with possibility to remove event/listener combination later without removing other listeners
+
+
+### u.setTimeout
+
+an alternative setTimeout function based on window.requestAnimationFrame (uses window.setTimeout as fallback)
+
+
+### width
+
+equivalent of jQueries width function
+
+
+
+## Events
+
+### click
+
+shortcut for on("click", ...)
+
+
+### resize
+
+shortcut for on("resize", ...)
+
+
+### swipe
+
+adds the event listener swipe (for more see below)
+
+/**
+ * Adds the event listener swipe to an object.
+ * The event swipe needs to be enabled first for the object by using swipeOn().
+ * The callback function receives as second parameter: eather "left", "right", "up", "down", "touch" or "none".
+ * The callback function receives as third and fourth parameter: the event objects of the touchstart and touchend event.
+ *
+ * E.g.: u_object.swipeOn().swipe(function(e, direction) { if (direction == "left") ...; });
+ */
+
+
+### transition
+
+event for detecting the end of a css transition
+(if supported, the event name will be in u.transition_event, otherwise u.transition_event will not exist after call)
