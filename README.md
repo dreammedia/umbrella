@@ -157,7 +157,7 @@ Created and maintained by [Francisco Presencia](https://github.com/franciscop) u
 Extended by [Daniel Lehmann](https://github.com/dreammedia)
 
 I added a couple more functions to umbrellajs. Most of them are jQuery functions I missed. Some are just functions I find usefull.
-Most of the code for the jQuery functions is original taken from [zeptojs.com][].
+Most of the code for the jQuery functions is originaly taken from [zeptojs.com][].
 
 You can now pass the window object to the umbrella object to add events to it:
 E.g.: u(window).resize(...)
@@ -183,13 +183,13 @@ loads text via an ajax call
 * Returns the success of the call, not of the respons.
 *
 *
-* @param url             the url of the request
-* @param callback        a callback function
-* @param method          the method "get" || "post" (optional, default "get")
-* @param values          values in the form of an associative array which are getting sent with the call (optional)
-* @param mine            the mine type of the request (optional, default "text/plain")
-* @param header          an associatives array of header parameters (optional)
-* @param credentials     indicates if the credentials of the site should be sent with the call (optional, default: false)
+* @param url             - the url of the request
+* @param callback        - a callback function
+* @param method          - the method "get" || "post" (optional, default "get")
+* @param values          - values in the form of an associative array which are getting sent with the call (optional)
+* @param mine            - the mine type of the request (optional, default "text/plain")
+* @param header          - an associatives array of header parameters (optional)
+* @param credentials     - indicates if the credentials of the site should be sent with the call (optional, default: false)
 *
 * @return	boolean
 
@@ -300,7 +300,7 @@ adds the event listener swipe
 * Adds the event listener swipe to an object.
 * The event swipe needs to be enabled first for the object by using swipeOn().
 * The callback function receives as second parameter: eather "left", "right", "up", "down", "touch" or "none".
-* The callback function receives as third and fourth parameter: the event objects of the touchstart and touchend event.
+* The callback function receives as third and fourth parameter: the event objects of the touchstart and touchend events.
 *
 * E.g.: u_object.swipeOn().swipe(function(e, direction) { if (direction == "left") ...; });
 
