@@ -157,7 +157,7 @@ Created and maintained by [Francisco Presencia](https://github.com/franciscop) u
 Extended by [Daniel Lehmann](https://github.com/dreammedia)
 
 I added a couple more functions to umbrellajs. Most of them are jQuery functions I missed. Some are just functions I find usefull.
-Most of the code for the jQuery functions is originaly taken from [zeptojs.com][].
+Most of the code for the jQuery functions is originaly taken from [zeptojs.com](https://zeptojs.com).
 
 You can now pass the window object to the umbrella object to add events to it:
 E.g.: u(window).resize(...)
