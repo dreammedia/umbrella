@@ -162,35 +162,36 @@ Most of the code for the jQuery functions is original taken from [zeptojs.com][]
 You can now pass the window object to the umbrella object to add events to it:
 E.g.: u(window).resize(...)
 
+
+
+
 ## Functions
 
-### add:
+### add
 
 creating a new u object by adding another, returning the new object
 
 
-### u.ajax:
+### u.ajax
 
 loads text via an ajax call
 
-/**
- * Loads text via an ajax call.
- * Calls the callback function with the returned text as first parameter (string) and the success as second (boolean).
- * Adds always a "cache" value if the method is "post".
- *
- * Returns the success of the call, not of the respons.
- *
- *
- * @param url             the url of the request
- * @param callback        a callback function
- * @param method          the method "get" || "post" (optional, default "get")
- * @param values          values in the form of an associative array which are getting sent with the call (optional)
- * @param mine            the mine type of the request (optional, default "text/plain")
- * @param header          an associatives array of header parameters (optional)
- * @param credentials     indicates if the credentials of the site should be sent with the call (optional, default: false)
- *
- * @return	boolean
- */
+* Loads text via an ajax call.
+* Calls the callback function with the returned text as first parameter (string) and the success as second (boolean).
+* Adds always a "cache" value if the method is "post".
+*
+* Returns the success of the call, not of the respons.
+*
+*
+* @param url             the url of the request
+* @param callback        a callback function
+* @param method          the method "get" || "post" (optional, default "get")
+* @param values          values in the form of an associative array which are getting sent with the call (optional)
+* @param mine            the mine type of the request (optional, default "text/plain")
+* @param header          an associatives array of header parameters (optional)
+* @param credentials     indicates if the credentials of the site should be sent with the call (optional, default: false)
+*
+* @return	boolean
 
 
 ### u.clearTimeout
@@ -255,12 +256,12 @@ enables the event "swipe" for an object (needs to be done only ones per object)
 
 ### swipeOff
 
-disables the event swipe for an object
+disables the event "swipe" for an object
 
 
 ### off
 
-added second parameter "listener" to remove only specific event/listener combination
+added second parameter "listener" to be able to remove only specific event/listener combination
 
 
 ### on2
@@ -279,6 +280,7 @@ equivalent of jQueries width function
 
 
 
+
 ## Events
 
 ### click
@@ -293,16 +295,14 @@ shortcut for on("resize", ...)
 
 ### swipe
 
-adds the event listener swipe (for more see below)
+adds the event listener swipe
 
-/**
- * Adds the event listener swipe to an object.
- * The event swipe needs to be enabled first for the object by using swipeOn().
- * The callback function receives as second parameter: eather "left", "right", "up", "down", "touch" or "none".
- * The callback function receives as third and fourth parameter: the event objects of the touchstart and touchend event.
- *
- * E.g.: u_object.swipeOn().swipe(function(e, direction) { if (direction == "left") ...; });
- */
+* Adds the event listener swipe to an object.
+* The event swipe needs to be enabled first for the object by using swipeOn().
+* The callback function receives as second parameter: eather "left", "right", "up", "down", "touch" or "none".
+* The callback function receives as third and fourth parameter: the event objects of the touchstart and touchend event.
+*
+* E.g.: u_object.swipeOn().swipe(function(e, direction) { if (direction == "left") ...; });
 
 
 ### transition
