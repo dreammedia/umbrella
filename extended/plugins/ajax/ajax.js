@@ -3,7 +3,7 @@
 * @Date:   2018/10/26
 * @Email:  code@dreammedia.info
 * @Last modified by:   Daniel Lehmann
-* @Last modified time: 2018/10/28
+* @Last modified time: 2019/03/05
 * @copyright Daniel Lehmann (code@dreammedia.info)
 */
 
@@ -92,7 +92,8 @@ u.ajax = function (url, callback, method, values, mine, header, credentials) {
     if (success === null) return;
     if (callback) {
       if (!success) callback(null, success);
-      else callback(this.responseText, true);
+      else if (this.responseText) callback(this.responseText, true);
+      else if (request && request.responseText) callback(request.responseText, true);
     }
     request = null;
   };
