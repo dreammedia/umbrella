@@ -3,7 +3,7 @@
 * @Date:   2018/10/26
 * @Email:  code@dreammedia.info
 * @Last modified by:   Daniel Lehmann
-* @Last modified time: 2019/03/05
+* @Last modified time: 2019/04/16
 * @copyright Daniel Lehmann (code@dreammedia.info)
 */
 
@@ -26,11 +26,11 @@
  * @return	boolean
  */
 u.ajax = function (url, callback, method, values, mine, header, credentials) {
-  if (typeof method === 'undefined') method = 'GET';
-  if (typeof values === 'undefined') values = [];
-  if (typeof mine === 'undefined') mine = 'text/plain';
-  if (typeof header === 'undefined') header = [];
-  if (typeof credentials === 'undefined') credentials = false;
+  if (typeof method === 'undefined' || method == null) method = 'GET';
+  if (typeof values === 'undefined' || values == null) values = [];
+  if (typeof mine === 'undefined' || mine == null) mine = 'text/plain';
+  if (typeof header === 'undefined' || header == null) header = [];
+  if (typeof credentials === 'undefined' || credentials == null) credentials = false;
 
   var now = new Date();
 
