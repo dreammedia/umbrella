@@ -179,6 +179,9 @@ loads text via an ajax call
 * Loads text via an ajax call.
 * Calls the callback function with the returned text as first parameter (string) and the success as second (boolean).
 * Adds always a "cache" value if the method is "post".
+* The header['Content-Type'] is set to 'application/x-www-form-urlencoded; charset=utf-8' by default.
+* The header['X-Requested-With'] is set to 'XMLHttpRequest' by default.
+* Set a header to null to remove a preset header.
 *
 * Returns the success of the call, not of the respons.
 *
@@ -187,7 +190,7 @@ loads text via an ajax call
 * @param callback        - a callback function
 * @param method          - the method "get" || "post" (optional, default "get")
 * @param values          - values in the form of an associative array which are getting sent with the call (optional)
-* @param mine            - the mine type of the request (optional, default "text/plain")
+* @param mime            - the mime type of the request (optional, default "text/plain")
 * @param header          - an associatives array of header parameters (optional)
 * @param credentials     - indicates if the credentials of the site should be sent with the call (optional, default: false)
 *

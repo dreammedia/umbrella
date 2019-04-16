@@ -879,6 +879,9 @@ u.prototype.add = function (parameter, context) {
  * Loads text via an ajax call.
  * Calls the callback function with the returned text as first parameter (string) and the success as second (boolean).
  * Adds always a "cache" value if the method is "post".
+ * The header['Content-Type'] is set to 'application/x-www-form-urlencoded; charset=utf-8' by default.
+ * The header['X-Requested-With'] is set to 'XMLHttpRequest' by default.
+ * Set a header to null to remove a preset header.
  *
  * Returns the success of the call, not of the respons.
  *
@@ -887,23 +890,24 @@ u.prototype.add = function (parameter, context) {
  * @param   callback        a callback function
  * @param   method          the method "get" || "post" (optional, default "get")
  * @param	values		    values in the form of an associative array which are getting sent with the call (optional)
- * @param   mine            the mine type of the request (optional, default "text/plain")
+ * @param   mime            the mime type of the request (optional, default "text/plain")
  * @param	header		    an associatives array of header parameters (optional)
  * @param   credentials     indicates if the credentials of the site should be sent with the call (optional, default: false)
  *
  * @return	boolean
  */
-u.ajax = function (url, callback, method, values, mine, header, credentials) {
+u.ajax = function (url, callback, method, values, mime, header, credentials) {
   if (typeof method === 'undefined' || method == null) method = 'GET';
   if (typeof values === 'undefined' || values == null) values = [];
-  if (typeof mine === 'undefined' || mine == null) mine = 'text/plain';
+  if (typeof mime === 'undefined' || mime == null) mime = 'text/plain';
   if (typeof header === 'undefined' || header == null) header = [];
   if (typeof credentials === 'undefined' || credentials == null) credentials = false;
 
   var now = new Date();
 
   method = method.toUpperCase();
-  if (!header['X-Requested-With']) header['X-Requested-With'] = 'XMLHttpRequest'; // use only if not cross domain
+  if (!('X-Requested-With' in header)) header['X-Requested-With'] = 'XMLHttpRequest'; // use only if not cross domain
+  if (!('Content-Type' in header)) header['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8';
   if (method === 'POST') {
     header['cache-control'] = 'no-cache';
     values['cache'] = now.getTime();
@@ -914,7 +918,7 @@ u.ajax = function (url, callback, method, values, mine, header, credentials) {
 
   try {
     request = new window.XMLHttpRequest();
-    request.overrideMimeType(mine);
+    request.overrideMimeType(mime);
   } catch (e) {
     try {
       request = new window.ActiveXObject('Msxml2.XMLHTTP');
@@ -972,11 +976,8 @@ u.ajax = function (url, callback, method, values, mine, header, credentials) {
   }
 
   request.open(method, url, asyncronous);
-  request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-  if (header.length) {
-    for (var key in header) {
-      request.setRequestHeader(key, header[key]);
-    }
+  for (var key in header) {
+    if (header[key]) request.setRequestHeader(key, header[key]);
   }
   if (credentials) request.withCredentials = 'true';
   request.onreadystatechange = onData;
