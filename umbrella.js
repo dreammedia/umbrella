@@ -1308,7 +1308,7 @@ u.prototype.transition = function (cb, cb2) {
 * @Date:   2018/09/28
 * @Email:  code@dreammedia.info
 * @Last modified by:   Daniel Lehmann
-* @Last modified time: 2018/10/04
+* @Last modified time: 2019/05/02
 * @copyright Daniel Lehmann (code@dreammedia.info)
 */
 
@@ -1329,7 +1329,7 @@ u.prototype.transition = function (cb, cb2) {
         var point = test_value.indexOf('.');
         if (point > 0) {
           test_value = test_value.substr(0, point) + '.' + test_value.substr(point + 1, 2);
-          if (test_value === (window.parseFloat(Math.floor(value * 100)) / 100).toString()) value = test_value + 'px';
+          if (window.parseFloat(test_value) === (Math.floor(value * 100) / 100)) value = test_value + 'px';
         }
       }
 
