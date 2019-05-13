@@ -222,6 +222,13 @@ returns the passed string dasherized
 equivalent of jQueries each function
 
 
+### u.getCookie
+
+returns the value of a cookie
+
+* @param   name    - the name of the cookie
+
+
 ### height
 
 equivalent of jQueries height function
@@ -250,6 +257,16 @@ returns the previous u(node) in the DOM
 ### ready
 
 equivalent of jQueries ready function
+
+
+### u.setCookie
+
+sets or deletes a cookie
+to delete a cookie, leave value and exdays empty
+
+* @param   name       - cookie name
+* @param   value      - cookie value (optional, default = '' -> cookie gets deleted)
+* @param   exdays     - days till expiration of the cookie (optional, default = 99999)
 
 
 ### swipeOn
