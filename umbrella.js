@@ -74,7 +74,7 @@ defineElementGetter(Element.prototype, 'classList', function () {
 * @Date:   2018/09/28
 * @Email:  code@dreammedia.info
 * @Last modified by:   Daniel Lehmann
-* @Last modified time: 2018/12/05
+* @Last modified time: 2019/05/31
 * @copyright Daniel Lehmann (code@dreammedia.info)
 */
 
@@ -135,6 +135,11 @@ u.prototype.nodes = [];
 // EXTENDED:
 u.isWindow = function (obj) { return obj != null && obj === obj.window; };
 u.isDocument = function (obj) { return obj != null && obj.nodeType === obj.DOCUMENT_NODE; };
+u.isMobileSafari = function() {
+  var platform = navigator.platform.trim().toLowerCase();
+  if (platform === 'iphone' || platform === 'ipad' || platform === 'ipod') return /iP(ad|hone|od).+Version\/[\d\.]+.*Safari/i.test(navigator.userAgent);
+  return false;
+};
 u.camelize = function (str) { return str.replace(/-+(.)?/g, function(match, chr){ return chr ? chr.toUpperCase() : '' }); };
 u.dasherize = function (str) { return str.replace(/::/g, '/').replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2').replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/_/g, '-').toLowerCase(); };
 
@@ -1196,6 +1201,25 @@ u.prototype.click = function (cb, cb2) {
 };
 u.prototype.resize = function (cb, cb2) {
   return this.on('resize', cb, cb2);
+};
+
+// Find the size of the first matched element
+// handles iOS bug with elements of fixed position
+u.prototype.size = function () {
+  var obj = this.first();
+  var value = obj.getBoundingClientRect();
+  if (u.isMobileSafari() && this.css('position') === 'fixed') {
+    var top = 0;
+    value = {left: value.left, right: value.right, width: value.width, height: value.height, x: value.x};
+    while (obj) {
+      top += obj.offsetTop;
+      obj = obj.offsetParent;
+    }
+    value.y = top;
+    value.top = (value.height < 0) ? top + value.height : top;
+    value.bottom = value.top + value.height;
+  }
+  return value;
 };
 
 /**

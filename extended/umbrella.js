@@ -3,7 +3,7 @@
 * @Date:   2018/09/28
 * @Email:  code@dreammedia.info
 * @Last modified by:   Daniel Lehmann
-* @Last modified time: 2018/12/05
+* @Last modified time: 2019/05/31
 * @copyright Daniel Lehmann (code@dreammedia.info)
 */
 
@@ -64,5 +64,10 @@ u.prototype.nodes = [];
 // EXTENDED:
 u.isWindow = function (obj) { return obj != null && obj === obj.window; };
 u.isDocument = function (obj) { return obj != null && obj.nodeType === obj.DOCUMENT_NODE; };
+u.isMobileSafari = function() {
+  var platform = navigator.platform.trim().toLowerCase();
+  if (platform === 'iphone' || platform === 'ipad' || platform === 'ipod') return /iP(ad|hone|od).+Version\/[\d\.]+.*Safari/i.test(navigator.userAgent);
+  return false;
+};
 u.camelize = function (str) { return str.replace(/-+(.)?/g, function(match, chr){ return chr ? chr.toUpperCase() : '' }); };
 u.dasherize = function (str) { return str.replace(/::/g, '/').replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2').replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/_/g, '-').toLowerCase(); };
